@@ -3,6 +3,7 @@ package internal
 
 import scala.language.implicitConversions
 import scala.quoted._
+import given scala.quoted._
 
 import dotty.xml.interpolator.internal.Tree._
 
