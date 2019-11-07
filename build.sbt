@@ -9,7 +9,8 @@ lazy val root = project
     scalaVersion := dottyVersion,
     scalacOptions ++= Seq(
       "-Xprint-inline",
-      "-Yexplicit-nulls"
+      "-Yexplicit-nulls",
+      "-Yjava-interop-dont-nullify-outermost"
     ),
     libraryDependencies ++= Seq(
       ("org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2").withDottyCompat(scalaVersion.value),
