@@ -36,16 +36,16 @@ object Expand {
 
   private def expandElem(elem: Elem)(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.Elem] = {
     val (namespaces, attributes) = elem.attributes.partition(_.isNamespace)
-    val prefix = if (elem.prefix.nonEmpty) Expr(elem.prefix) else '{ null: String }
+    val prefix = if (elem.prefix.nonEmpty) Expr(elem.prefix) else '{ null: String | Null }
     val label = Expr(elem.label)
     val attributes1 = expandAttributes(attributes)
     val scope = expandNamespaces(namespaces)
     val empty = Expr(elem.end.isEmpty)
     val child = expandNodes(elem.children)(new XmlContext(ctx.args, scope), qctx)
     if (elem.children.isEmpty)
-      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
+      '{ new _root_.scala.xml.Elem($prefix.asInstanceOf[String], $label, $attributes1, $scope, $empty) }
     else
-      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, $child: _*) }
+      '{ new _root_.scala.xml.Elem($prefix.asInstanceOf[String], $label, $attributes1, $scope, $empty, $child: _*) }
   }
 
   private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.MetaData] = {
@@ -90,12 +90,12 @@ object Expand {
   private def expandNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.NamespaceBinding] = {
     import qctx.tasty.{_, given}
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
-      val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String }
+      val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String | Null}
       val uri = (namespace.value.head: @unchecked) match {
         case Text(text) => Expr(text)
         case Placeholder(id) => Expr.betaReduceGiven(ctx.args(id))('{ _root_.scala.xml.TopScope }).asInstanceOf[Expr[String]]
       }
-      '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
+      '{ new _root_.scala.xml.NamespaceBinding($prefix.asInstanceOf[String], $uri, $rest) }
     })
   }
 
